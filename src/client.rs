@@ -10,7 +10,7 @@ use bincode::{DefaultOptions, Options};
 use serde::{de::DeserializeSeed, Deserialize, Serialize};
 
 use crate::{
-    tick::Tick,
+    tick::NetworkTick,
     world_diff::{ComponentDiff, WorldDiff, WorldDiffDeserializer},
     Replication, REPLICATION_CHANNEL_ID,
 };
@@ -68,7 +68,7 @@ impl ClientPlugin {
 
     fn world_diff_receiving_system(
         mut commands: Commands,
-        mut last_tick: ResMut<LastTick>,
+        mut tick: ResMut<LastTick>,
         mut client: ResMut<RenetClient>,
         registry: Res<AppTypeRegistry>,
     ) {
@@ -110,14 +110,8 @@ pub enum ClientState {
 /// Last received tick from server.
 ///
 /// Exists only on clients, sent to the server.
-#[derive(Resource, Serialize, Deserialize, Deref, DerefMut)]
-pub(super) struct LastTick(pub(super) Tick);
-
-impl Default for LastTick {
-    fn default() -> Self {
-        Self(Tick::new(0))
-    }
-}
+#[derive(Resource, Default, Serialize, Deserialize, Deref, DerefMut)]
+pub struct LastTick(pub(super) NetworkTick);
 
 trait ApplyWorldDiffExt {
     fn apply_world_diff(&mut self, world_diff: WorldDiff);
